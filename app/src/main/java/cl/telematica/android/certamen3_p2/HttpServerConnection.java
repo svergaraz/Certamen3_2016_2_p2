@@ -1,6 +1,9 @@
 package cl.telematica.android.certamen3_p2;
 
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -15,9 +18,43 @@ import java.net.URL;
 
 public class HttpServerConnection {
 
-    public String connectToServer(String myUrl, int timeOut){
-        try {
-            URL url = new URL(myUrl);
+    public String connectToServer(String myUrl, String seriename, int timeOut) throws Exception {
+        /*try {*/
+            URL obj = new URL(myUrl);
+            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+
+            //add reuqest header
+            con.setRequestMethod("POST");
+            //con.setRequestProperty("User-Agent", USER_AGENT);
+            //con.setRequestProperty("Accept-Language", "es-ES,es;q=0.5");
+
+            String json = "";
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.accumulate("name", seriename);
+            json = jsonObject.toString();
+
+            // Send post request
+            con.setDoOutput(true);
+            DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+            wr.writeBytes(json);
+            wr.flush();
+            wr.close();
+
+            BufferedReader in = new BufferedReader(
+                    new InputStreamReader(con.getInputStream()));
+            String inputLine;
+            StringBuffer response = new StringBuffer();
+
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+
+            //print result
+            //System.out.println(response.toString());
+            return response.toString();
+
+            /*URL url = new URL(myUrl);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
             conn.setConnectTimeout(timeOut);
@@ -27,14 +64,14 @@ public class HttpServerConnection {
             conn.connect();
 
             InputStream is = conn.getInputStream();
-            return readIt(is);
-        } catch (MalformedURLException e) {
+            return readIt(is);*/
+        /*} catch (MalformedURLException e) {
             e.printStackTrace();
             return null;
         } catch (IOException e) {
             e.printStackTrace();
             return null;
-        }
+        }*/
     }
 
     private String readIt(InputStream stream) throws IOException {
